@@ -20,6 +20,8 @@ import { DashboardPage } from '@/pages/DashboardPage'
 import { NewBusinessPage } from '@/pages/NewBusinessPage'
 import { EditBusinessPage } from '@/pages/EditBusinessPage'
 import { InquiriesPage } from '@/pages/InquiriesPage'
+import { ForgotPasswordPage } from '@/pages/ForgotPasswordPage'
+import { ResetPasswordPage } from '@/pages/ResetPasswordPage'
 import { ServicesPage } from '@/pages/ServicesPage'
 import { ServiceDetailPage } from '@/pages/ServiceDetailPage'
 import { NewServicePage } from '@/pages/NewServicePage'
@@ -43,6 +45,8 @@ export default function App() {
         <Route path="/services/:id" element={<ServiceDetailPage />} />
         <Route path="/sign-in" element={<SignInPage />} />
         <Route path="/sign-up" element={<SignUpPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
 
         {/* Protected */}
         <Route path="/services/new" element={<ProtectedRoute><NewServicePage /></ProtectedRoute>} />

@@ -22,17 +22,42 @@ const UPLOADS_DIR = process.env.UPLOADS_DIR ?? '/tmp/uploads'
 
 // Run init.sql on startup (idempotent — all statements use IF NOT EXISTS)
 async function initDb() {
-  const sqlPath = path.join(__dirname, '../../init.sql')
-  if (fs.existsSync(sqlPath)) {
-    const sql = fs.readFileSync(sqlPath, 'utf8')
-    const client = await pool.connect()
-    try { await client.query(sql) } catch (e) { console.error('DB init error:', e) } finally { client.release() }
-    console.log('DB initialized')
+  if (!process.env.DATABASE_URL) {
+    console.error('FATAL: DATABASE_URL is not set. Postgres will not connect.')
   }
+  const candidates = [
+    path.join(__dirname, '../../init.sql'),   // repo root when root dir = server/
+    path.join(__dirname, '../init.sql'),       // server/ dir
+    path.join(process.cwd(), 'init.sql'),      // cwd fallback
+    path.join(process.cwd(), '../init.sql'),
+  ]
+  const sqlPath = candidates.find(p => fs.existsSync(p))
+  if (!sqlPath) {
+    console.error('init.sql not found at any candidate path:', candidates)
+    return
+  }
+  console.log('Running init.sql from:', sqlPath)
+  const sql = fs.readFileSync(sqlPath, 'utf8')
+  const client = await pool.connect()
+  try { await client.query(sql); console.log('DB initialized') }
+  catch (e) { console.error('DB init error:', e) }
+  finally { client.release() }
 }
 
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'https://churchconnectlink.netlify.app',
+  'http://localhost:3000',
+].filter(Boolean) as string[]
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL ?? 'http://localhost:3000',
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.some(o => origin.startsWith(o))) {
+      callback(null, true)
+    } else {
+      callback(null, false)
+    }
+  },
   credentials: true,
 }))
 app.use(express.json())

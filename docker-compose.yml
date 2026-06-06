@@ -1,0 +1,166 @@
+services:
+
+  # ── Infrastructure ──────────────────────────────────────────────────────────
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: church_platform
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - '5434:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '6380:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # ── Microservices ────────────────────────────────────────────────────────────
+
+  auth-service:
+    build:
+      context: ./services/auth-service
+      network: host
+    ports:
+      - '4001:4001'
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/church_platform
+      REDIS_URL: redis://redis:6379
+      BETTER_AUTH_SECRET: change-me-in-production
+      GATEWAY_URL: http://localhost:4000
+      FRONTEND_URL: http://localhost:3000
+      PORT: '4001'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:4001/health || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  business-service:
+    build:
+      context: ./services/business-service
+      network: host
+    ports:
+      - '4002:4002'
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/church_platform
+      AUTH_SERVICE_URL: http://auth-service:4001
+      UPLOADS_DIR: /uploads
+      PORT: '4002'
+    volumes:
+      - uploads_data:/uploads
+    depends_on:
+      auth-service:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:4002/health || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  review-service:
+    build:
+      context: ./services/review-service
+      network: host
+    ports:
+      - '4003:4003'
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/church_platform
+      AUTH_SERVICE_URL: http://auth-service:4001
+      PORT: '4003'
+    depends_on:
+      auth-service:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:4003/health || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  inquiry-service:
+    build:
+      context: ./services/inquiry-service
+      network: host
+    ports:
+      - '4004:4004'
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/church_platform
+      AUTH_SERVICE_URL: http://auth-service:4001
+      PORT: '4004'
+    depends_on:
+      auth-service:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:4004/health || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  gateway:
+    build:
+      context: ./services/gateway
+      network: host
+    ports:
+      - '4000:4000'
+    environment:
+      AUTH_SERVICE_URL: http://auth-service:4001
+      BUSINESS_SERVICE_URL: http://business-service:4002
+      REVIEW_SERVICE_URL: http://review-service:4003
+      INQUIRY_SERVICE_URL: http://inquiry-service:4004
+      FRONTEND_URL: http://localhost:3000
+      PORT: '4000'
+    depends_on:
+      business-service:
+        condition: service_healthy
+      review-service:
+        condition: service_healthy
+      inquiry-service:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:4000/health || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  # ── Frontend ─────────────────────────────────────────────────────────────────
+
+  frontend:
+    build:
+      context: ./frontend
+      network: host
+    ports:
+      - '3000:3000'
+    depends_on:
+      gateway:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  redis_data:
+  uploads_data:

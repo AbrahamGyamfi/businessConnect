@@ -15,6 +15,7 @@ import uploadRouter from './routes/upload'
 import statsRouter from './routes/stats'
 import reviewsRouter from './routes/reviews'
 import inquiriesRouter from './routes/inquiries'
+import servicesRouter from './routes/services'
 
 const app = express()
 const PORT = process.env.PORT ?? 4000
@@ -87,6 +88,7 @@ app.use('/api/admin', adminRouter)
 app.use('/api/stats', statsRouter)
 app.use('/api/reviews', reviewsRouter)
 app.use('/api/inquiries', inquiriesRouter)
+app.use('/api/services', servicesRouter)
 
 initDb().then(() => {
   app.listen(PORT, () => console.log(`Server running on port ${PORT}`))

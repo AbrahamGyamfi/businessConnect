@@ -125,3 +125,20 @@ INSERT INTO category (name, slug, icon) VALUES
   ('Arts & Crafts', 'arts-crafts', 'Palette'),
   ('Other', 'other', 'MoreHorizontal')
 ON CONFLICT (slug) DO NOTHING;
+
+CREATE TABLE IF NOT EXISTS service_provider (
+  id SERIAL PRIMARY KEY,
+  "userId" TEXT NOT NULL,
+  name TEXT NOT NULL,
+  category TEXT NOT NULL,
+  description TEXT NOT NULL,
+  rate TEXT,
+  location TEXT,
+  phone TEXT,
+  email TEXT,
+  availability TEXT,
+  image TEXT,
+  "isActive" BOOLEAN NOT NULL DEFAULT TRUE,
+  "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
+  "updatedAt" TIMESTAMP NOT NULL DEFAULT NOW()
+);

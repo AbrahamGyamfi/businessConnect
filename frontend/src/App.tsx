@@ -20,6 +20,9 @@ import { DashboardPage } from '@/pages/DashboardPage'
 import { NewBusinessPage } from '@/pages/NewBusinessPage'
 import { EditBusinessPage } from '@/pages/EditBusinessPage'
 import { InquiriesPage } from '@/pages/InquiriesPage'
+import { ServicesPage } from '@/pages/ServicesPage'
+import { ServiceDetailPage } from '@/pages/ServiceDetailPage'
+import { NewServicePage } from '@/pages/NewServicePage'
 
 export default function App() {
   return (
@@ -36,10 +39,13 @@ export default function App() {
         <Route path="/jobs/:slug" element={<JobDetailPage />} />
         <Route path="/events" element={<EventsPage />} />
         <Route path="/events/:slug" element={<EventDetailPage />} />
+        <Route path="/services" element={<ServicesPage />} />
+        <Route path="/services/:id" element={<ServiceDetailPage />} />
         <Route path="/sign-in" element={<SignInPage />} />
         <Route path="/sign-up" element={<SignUpPage />} />
 
         {/* Protected */}
+        <Route path="/services/new" element={<ProtectedRoute><NewServicePage /></ProtectedRoute>} />
         <Route path="/jobs/new" element={<ProtectedRoute><NewJobPage /></ProtectedRoute>} />
         <Route path="/events/new" element={<ProtectedRoute><NewEventPage /></ProtectedRoute>} />
         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />

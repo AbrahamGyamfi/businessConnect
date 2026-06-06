@@ -39,6 +39,9 @@ export function Header() {
           <Link to="/directory" className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all">
             Directory
           </Link>
+          <Link to="/services" className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all">
+            Services
+          </Link>
           <Link to="/jobs" className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all">
             Jobs
           </Link>
@@ -115,7 +118,7 @@ export function Header() {
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-border/50 bg-card/95 backdrop-blur-xl px-4 py-4">
           <nav className="flex flex-col gap-1">
-            {[['Directory', '/directory'], ['Jobs', '/jobs'], ['Events', '/events'], ['Community', '/community']].map(([label, href]) => (
+            {[['Directory', '/directory'], ['Services', '/services'], ['Jobs', '/jobs'], ['Events', '/events'], ['Community', '/community']].map(([label, href]) => (
               <Link
                 key={href}
                 to={href}

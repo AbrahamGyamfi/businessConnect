@@ -15,6 +15,12 @@ export const auth = betterAuth({
     'http://localhost:3000',
   ].filter(Boolean),
   session: { expiresIn: 60 * 60 * 24 * 7, updateAge: 60 * 60 * 24 },
+  advanced: {
+    defaultCookieAttributes: {
+      sameSite: 'none',
+      secure: true,
+    },
+  },
   ...(redis ? {
     secondaryStorage: {
       get: (key: string) => redis.get(key),

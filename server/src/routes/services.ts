@@ -57,7 +57,7 @@ router.get('/mine', requireAuth, async (req, res) => {
 
 router.get('/:id', async (req, res) => {
   try {
-    const id = parseInt(req.params.id)
+    const id = parseInt(req.params.id as string)
     const [row] = await db
       .select({ service: serviceProvider, provider: { id: user.id, name: user.name, image: user.image } })
       .from(serviceProvider)
@@ -93,7 +93,7 @@ router.post('/', requireAuth, async (req, res) => {
 
 router.put('/:id', requireAuth, async (req, res) => {
   try {
-    const id = parseInt(req.params.id)
+    const id = parseInt(req.params.id as string)
     const [existing] = await db.select().from(serviceProvider).where(eq(serviceProvider.id, id))
     if (!existing) { res.status(404).json({ message: 'Not found' }); return }
     if (existing.userId !== req.userId) { res.status(403).json({ message: 'Unauthorized' }); return }
@@ -108,7 +108,7 @@ router.put('/:id', requireAuth, async (req, res) => {
 
 router.delete('/:id', requireAuth, async (req, res) => {
   try {
-    const id = parseInt(req.params.id)
+    const id = parseInt(req.params.id as string)
     const [existing] = await db.select().from(serviceProvider).where(eq(serviceProvider.id, id))
     if (!existing) { res.status(404).json({ message: 'Not found' }); return }
     if (existing.userId !== req.userId) { res.status(403).json({ message: 'Unauthorized' }); return }

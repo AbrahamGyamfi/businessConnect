@@ -11,6 +11,9 @@ const transporter = process.env.SMTP_HOST
       port: parseInt(process.env.SMTP_PORT ?? '587'),
       secure: process.env.SMTP_SECURE === 'true',
       auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+      connectionTimeout: 5000,
+      greetingTimeout: 5000,
+      socketTimeout: 10000,
     })
   : null
 
@@ -46,7 +49,7 @@ export const auth = betterAuth({
     autoSignIn: false,
     requireEmailVerification: true,
     sendResetPassword: async ({ user, url }) => {
-      await sendMail(user.email, 'Reset your ChurchConnect password',
+      sendMail(user.email, 'Reset your ChurchConnect password',
         brandedEmail('Reset Your Password', `
           <p style="color:#374151;text-align:center">Click the button below to reset your password. This link expires in 1 hour.</p>
           <div style="text-align:center;margin:28px 0">
@@ -60,7 +63,7 @@ export const auth = betterAuth({
   },
   emailVerification: {
     sendVerificationEmail: async ({ user, url }) => {
-      await sendMail(user.email, 'Verify your ChurchConnect email',
+      sendMail(user.email, 'Verify your ChurchConnect email',
         brandedEmail('Verify Your Email', `
           <p style="color:#374151;text-align:center">Welcome, <strong>${user.name}</strong>! Please verify your email to activate your account.</p>
           <div style="text-align:center;margin:28px 0">

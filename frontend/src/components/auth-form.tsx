@@ -31,7 +31,14 @@ export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
     } else {
       const { error } = await authClient.signIn.email({ email, password })
       setLoading(false)
-      if (error) { setError(error.message ?? 'Something went wrong'); return }
+      if (error) {
+        if (error.message?.toLowerCase().includes('verify') || error.message?.toLowerCase().includes('verified')) {
+          setVerifyEmailSent(true)
+        } else {
+          setError(error.message ?? 'Something went wrong')
+        }
+        return
+      }
       navigate('/dashboard')
     }
   }

@@ -62,6 +62,7 @@ export const auth = betterAuth({
     },
   },
   emailVerification: {
+    callbackURL: `${FRONTEND}/dashboard`,
     sendVerificationEmail: async ({ user, url }) => {
       sendMail(user.email, 'Verify your ChurchConnect email',
         brandedEmail('Verify Your Email', `

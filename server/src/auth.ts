@@ -46,8 +46,8 @@ export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET ?? 'change-me-in-production',
   emailAndPassword: {
     enabled: true,
-    autoSignIn: false,
-    requireEmailVerification: true,
+    autoSignIn: true,
+    requireEmailVerification: false,
     sendResetPassword: async ({ user, url }) => {
       sendMail(user.email, 'Reset your ChurchConnect password',
         brandedEmail('Reset Your Password', `
@@ -62,13 +62,14 @@ export const auth = betterAuth({
     },
   },
   emailVerification: {
-    callbackURL: `${FRONTEND}/dashboard`,
-    sendVerificationEmail: async ({ user, url }) => {
+    sendVerificationEmail: async ({ user, token }) => {
+      // Link goes to Netlify frontend — avoids cross-origin redirect issues
+      const verifyUrl = `${FRONTEND}/verify-email?token=${token}`
       sendMail(user.email, 'Verify your ChurchConnect email',
         brandedEmail('Verify Your Email', `
-          <p style="color:#374151;text-align:center">Welcome, <strong>${user.name}</strong>! Please verify your email to activate your account.</p>
+          <p style="color:#374151;text-align:center">Welcome, <strong>${user.name}</strong>! Please verify your email address to unlock all features.</p>
           <div style="text-align:center;margin:28px 0">
-            <a href="${url}" style="background:#4f46e5;color:#fff;text-decoration:none;padding:14px 32px;border-radius:8px;font-weight:600;font-size:15px;display:inline-block">
+            <a href="${verifyUrl}" style="background:#4f46e5;color:#fff;text-decoration:none;padding:14px 32px;border-radius:8px;font-weight:600;font-size:15px;display:inline-block">
               Verify Email
             </a>
           </div>

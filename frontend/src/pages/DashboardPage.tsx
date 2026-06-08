@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { CategoryIcon } from '@/components/category-icon'
 import { StarRating } from '@/components/star-rating'
-import { Plus, Settings, MessageSquare, Store, Camera, Save, Loader2, Eye, Wrench, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Settings, MessageSquare, Store, Camera, Save, Loader2, Eye, Wrench, Trash2, MailWarning } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000'
 
@@ -115,6 +115,16 @@ export function DashboardPage() {
               </Link>
             </Button>
           </div>
+
+          {/* Email verification banner */}
+          {session?.user && !(session.user as { emailVerified?: boolean }).emailVerified && (
+            <div className="flex items-center gap-3 mb-6 p-4 rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
+              <MailWarning className="h-5 w-5 text-amber-600 shrink-0" />
+              <p className="text-sm text-amber-800 dark:text-amber-400 flex-1">
+                Please verify your email address. Check your inbox for a verification link.
+              </p>
+            </div>
+          )}
 
           {/* Profile Settings */}
           <Card className="mb-8">

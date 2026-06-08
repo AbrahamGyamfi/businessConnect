@@ -4,7 +4,7 @@ import { authClient } from '@/lib/auth-client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Church, Eye, EyeOff, Mail } from 'lucide-react'
+import { Church, Eye, EyeOff } from 'lucide-react'
 
 export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
   const navigate = useNavigate()
@@ -14,7 +14,6 @@ export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [verifyEmailSent, setVerifyEmailSent] = useState(false)
 
   const isSignUp = mode === 'sign-up'
 
@@ -23,48 +22,12 @@ export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
     setError(null)
     setLoading(true)
 
-    if (isSignUp) {
-      const { error } = await authClient.signUp.email({ email, password, name })
-      setLoading(false)
-      if (error) { setError(error.message ?? 'Something went wrong'); return }
-      setVerifyEmailSent(true)
-    } else {
-      const { error } = await authClient.signIn.email({ email, password })
-      setLoading(false)
-      if (error) {
-        if (error.message?.toLowerCase().includes('verify') || error.message?.toLowerCase().includes('verified')) {
-          setVerifyEmailSent(true)
-        } else {
-          setError(error.message ?? 'Something went wrong')
-        }
-        return
-      }
-      navigate('/dashboard')
-    }
-  }
-
-  if (verifyEmailSent) {
-    return (
-      <main className="min-h-svh bg-gradient-to-br from-primary/5 via-background to-secondary/20 flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md">
-          <div className="bg-card rounded-2xl border border-border/60 shadow-xl shadow-primary/5 p-8 text-center">
-            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-5">
-              <Mail className="h-8 w-8 text-primary" />
-            </div>
-            <h1 className="text-2xl font-bold text-foreground mb-2">Check your email</h1>
-            <p className="text-muted-foreground mb-2">
-              We sent a verification link to <strong className="text-foreground">{email}</strong>
-            </p>
-            <p className="text-sm text-muted-foreground mb-6">
-              Click the link in the email to verify your account and sign in.
-            </p>
-            <Button variant="outline" className="w-full" asChild>
-              <Link to="/sign-in">Back to Sign In</Link>
-            </Button>
-          </div>
-        </div>
-      </main>
-    )
+    const { error } = isSignUp
+      ? await authClient.signUp.email({ email, password, name })
+      : await authClient.signIn.email({ email, password })
+    setLoading(false)
+    if (error) { setError(error.message ?? 'Something went wrong'); return }
+    navigate('/dashboard')
   }
 
   return (

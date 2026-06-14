@@ -25,7 +25,8 @@ export function VerifyEmailPage() {
           setMessage(error.message ?? 'Verification failed. The link may have expired.')
         } else {
           setStatus('success')
-          setTimeout(() => navigate('/dashboard'), 2500)
+          // autoSignInAfterVerification creates the session — go straight to dashboard
+          setTimeout(() => navigate('/dashboard', { replace: true }), 2000)
         }
       })
       .catch(() => {

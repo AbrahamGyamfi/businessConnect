@@ -46,8 +46,8 @@ export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET ?? 'change-me-in-production',
   emailAndPassword: {
     enabled: true,
-    autoSignIn: true,
-    requireEmailVerification: false,
+    autoSignIn: false,
+    requireEmailVerification: true,
     sendResetPassword: async ({ user, url }) => {
       sendMail(user.email, 'Reset your ChurchConnect password',
         brandedEmail('Reset Your Password', `

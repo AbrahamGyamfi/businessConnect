@@ -4,7 +4,7 @@ import { authClient } from '@/lib/auth-client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Church, Eye, EyeOff } from 'lucide-react'
+import { Church, Eye, EyeOff, Mail, RefreshCw } from 'lucide-react'
 
 export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
   const navigate = useNavigate()
@@ -14,6 +14,9 @@ export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [awaitingVerification, setAwaitingVerification] = useState(false)
+  const [resending, setResending] = useState(false)
+  const [resent, setResent] = useState(false)
 
   const isSignUp = mode === 'sign-up'
 
@@ -22,12 +25,64 @@ export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
     setError(null)
     setLoading(true)
 
-    const { error } = isSignUp
-      ? await authClient.signUp.email({ email, password, name })
-      : await authClient.signIn.email({ email, password })
-    setLoading(false)
-    if (error) { setError(error.message ?? 'Something went wrong'); return }
-    navigate('/dashboard')
+    if (isSignUp) {
+      const { error } = await authClient.signUp.email({ email, password, name })
+      setLoading(false)
+      if (error) { setError(error.message ?? 'Something went wrong'); return }
+      setAwaitingVerification(true)
+    } else {
+      const { error } = await authClient.signIn.email({ email, password })
+      setLoading(false)
+      if (error) {
+        const msg = error.message ?? ''
+        if (msg.toLowerCase().includes('verif') || msg.toLowerCase().includes('email')) {
+          setAwaitingVerification(true)
+        } else {
+          setError(msg || 'Invalid email or password')
+        }
+        return
+      }
+      navigate('/dashboard')
+    }
+  }
+
+  const handleResend = async () => {
+    setResending(true)
+    await authClient.sendVerificationEmail({ email, callbackURL: '/verify-email' }).catch(() => {})
+    setResending(false)
+    setResent(true)
+    setTimeout(() => setResent(false), 4000)
+  }
+
+  if (awaitingVerification) {
+    return (
+      <main className="min-h-svh bg-gradient-to-br from-primary/5 via-background to-secondary/20 flex items-center justify-center px-4 py-12">
+        <div className="w-full max-w-md">
+          <div className="bg-card rounded-2xl border border-border/60 shadow-xl shadow-primary/5 p-8 text-center">
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-5">
+              <Mail className="h-8 w-8 text-primary" />
+            </div>
+            <h1 className="text-2xl font-bold text-foreground mb-2">Check your email</h1>
+            <p className="text-muted-foreground mb-1">
+              We sent a verification link to
+            </p>
+            <p className="font-semibold text-foreground mb-4">{email}</p>
+            <p className="text-sm text-muted-foreground mb-6">
+              Click the link in the email to verify your account, then you'll be taken to your dashboard.
+            </p>
+
+            <Button variant="outline" onClick={handleResend} disabled={resending || resent} className="w-full mb-3 gap-2">
+              <RefreshCw className={`h-4 w-4 ${resending ? 'animate-spin' : ''}`} />
+              {resent ? 'Sent!' : resending ? 'Sending…' : 'Resend verification email'}
+            </Button>
+
+            <Button variant="ghost" className="w-full text-muted-foreground" asChild>
+              <Link to="/sign-in">Back to Sign In</Link>
+            </Button>
+          </div>
+        </div>
+      </main>
+    )
   }
 
   return (
